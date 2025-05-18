@@ -1,6 +1,6 @@
 import openmc as mc
 import openmc.deplete
-from fresh_core import fresh_core_model
+from fresh_core.fresh_core import fresh_core_model
 
 mc.config['cross_sections'] = 'please provide the path to your cross_sections.xml file in your system'
 # The cross-sections library used in this model was ENDF/B-VIII.0
