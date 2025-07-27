@@ -1088,6 +1088,16 @@ tallies = mc.Tallies([thermal_flux_tally, epithermal_flux_tally, kinetics_tally,
 tallies.export_to_xml()
 '''
 
+import numpy as np
+energies = np.logspace(np.log10(1e-3), np.log10(20.0e6), 501)
+e_filter = mc.EnergyFilter(energies)
+
+spectrum = mc.Tally()
+spectrum.filters = [e_filter]
+spectrum.scores = ['flux']
+
+tallies = mc.Tallies([spectrum])
+tallies.export_to_xml()
 
 
 
@@ -1117,7 +1127,7 @@ entropy_mesh.dimension = (10, 10, 10)
 settings.batches = 500
 settings.inactive = 100
 # 500,000 particles at 500 batches with 100 inactive will produce approximately 7 pcm error and will take approximately 3 hours to run
-settings.particles = 10000 # multiply by 4 to reduce the error to half, multiply the 4 by 4 to reduce to another half, and so on
+settings.particles = 1000 # multiply by 4 to reduce the error to half, multiply the 4 by 4 to reduce to another half, and so on
 settings.entropy_mesh = entropy_mesh
 settings.output = {'tallies': False, 'summary': False}
 

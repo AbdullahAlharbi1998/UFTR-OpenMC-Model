@@ -2,24 +2,24 @@
 
 ## Overview
 
-This repository contains a high-fidelity, benchmarked, and validated OpenMC model of the University of Florida Training Reactor (UFTR). It is designed for use in research, education, and daily operations.
+This repository contains a high-fidelity, benchmarked, and validated full-geometry OpenMC model of the University of Florida Training Reactor (UFTR). It is designed for use in research, education, and daily operations.
 
 ## About UFTR
 
-The UFTR is a training reactor located at the University of Florida. Here are some key details about the reactor:
+The UFTR is a training and research reactor located at the University of Florida. Here are some key details about it:
 
-- **Type**: Argonaut-type reactor designed by Argonne National Laboratory.
-- **First Critical**: Achieved first critical operation in 1959.
-- **License**: Licensed at 100 kW.
-- **Fuel**: Uses U3Si2-Al plates with a U-235 enrichment of 19.75% by weight.
-- **Cladding**: Al6061 is used as cladding material.
-- **Core Composition**:
-  - **Assemblies**: Each assembly consists of 14 plates.
-  - **Boxes**: Each box contains 4 assemblies.
-  - **Core Layout**: The core consists of 6 boxes arranged in two parallel rows, each containing 3 boxes, with two blades in between boxes.
-  - **Neutron Absorption**: Control blades tipped with cadmium are inserted between the boxes for neutron control.
-- **Cooling and Moderation**: Water flows from the bottom to the top between the plates and inside the boxes, serving as both the coolant and the neutron moderator.
-- **Reflector**: The core is surrounded by a graphite reflector, which also acts as a moderator to slow down fast neutrons.
+- **Type**: Argonaut-type reactor
+- **First Critical**: 1959
+- **License**: 100 kW
+- **Fuel**: U3Si2-Al plates with a U-235 enrichment of 19.70% by weight
+- **Cladding**: Al6061
+- **Fuel arrangement**:
+  - 14 plates make up one assembly
+  - 4 assemblies make up one box
+  - The core consists of 6 boxes arranged in two parallel rows, each containing 3 boxes, with two blades in between boxes
+- **Neutron Absorption**: Control blades tipped with cadmium are inserted between the boxes
+- **Cooling and Moderation**: Water flows from the bottom to the top between the plates and inside the boxes, serving as both the coolant and the neutron moderator
+- **Reflector**: The core is composed and surrounded by a graphite, serving as both moderatot and reflector
 
 ## Core Design
 
@@ -37,72 +37,60 @@ The UFTR is a training reactor located at the University of Florida. Here are so
 | Cadmium (Control Material) | Green   |
 | Concrete                   | Brown   |
 
-![XY](https://github.com/user-attachments/assets/9cb4e6f9-c681-4e1e-8bad-461dffc39f45)
-![XY zoomed](https://github.com/user-attachments/assets/98d4baca-2460-47f9-8718-9510459bb906)
-![XZ](https://github.com/user-attachments/assets/b1b2b267-ca0f-4430-8fde-3ea85ab2d33e)
-![XZ zoomed](https://github.com/user-attachments/assets/06c48f95-7944-43a6-9b4e-cb0cbd10e815)
-![YZ](https://github.com/user-attachments/assets/6f580e72-9662-4321-b022-cee8dfa79574)
+
+
+c:\OpenMC\UFTR\GitHub Repository\fresh_core\Figures\full geometry radial.png
+c:\OpenMC\UFTR\GitHub Repository\march2025_core\figures\XY zoomed.png
+c:\OpenMC\UFTR\GitHub Repository\fresh_core\Figures\full geometry axial.png
+c:\OpenMC\UFTR\GitHub Repository\march2025_core\figures\XZ zoomed.png
+c:\OpenMC\UFTR\GitHub Repository\march2025_core\figures\YZ.png
 
 
 ## Model Benchmarking and Validation
 
-The UFTR OpenMC model has been validated against both the fresh core and the current core using four complementary methods. These validation efforts target key physical and operational parameters of the reactor. The results show strong agreement with experimental and reported data, increasing confidence in the model's predictive capabilities.
+There are to version of the model, one for the frsh core of 2006, and one for the core of March 2025, taking depletion into account, both versions has been validated against both experimental data taken directly from operation and an established MCNP model using four complementary methods. These validation efforts target key physical and operational parameters of the reactor. The results show strong agreement with experimental and reported data, increasing confidence in the model's predictive capabilities.
 
 ### 1. Reactivity Parameter Comparison
 
 Reactivity parameters computed by the model were compared to those reported in experimental documentation for both the fresh core and the operational core as of July 2022. These parameters include excess reactivity, shutdown margin, and control blade worths. The comparison tables below illustrate the model’s agreement with experimental benchmarks.
 
-#### Table 1. Fresh Core Reactivity Parameters Comparison
+#### Table 1. Fresh Core Reactivity and Kinetics Parameters Comparison
 
-| Parameter                    | OpenMC Estimation       | Measured      | Difference (%) |
-|-----------------------------|-------------------------|---------------|----------------|
-| Excess Reactivity (pcm)     | 996±11                  | 1005          | -0.9           |
-| Shutdown Margin (pcm)       | 2867±13                 | 2848          | 1.0            |
-| Safety Blade 1 Worth (pcm)  | 1342±12                 | 1380          | -2.7           |
-| Safety Blade 2 Worth (pcm)  | 1712±14                 | 1672          | 2.4            |
-| Safety Blade 3 Worth (pcm)  | 1851±14                 | 1903          | -2.7           |
-| Regulating Blade Worth (pcm)| 809±13                  | 801           | 1.0            |
+| Parameter                              | OpenMC              | Experimental   | MCNP     | δ₁ (%)    | δ₂ (%)   |
+|----------------------------------------|---------------------|----------------|----------|-----------|----------|
+| Excess Reactivity (pcm)                | 609±11              | 600            | 539      | 1.5       | 12.99    |
+| Shutdown Margin (pcm)                  | 3267±13             | 3290           | 3441     | -0.7      | -5.06    |
+| Safety Blade 1 Worth (pcm)             | 1379±12             | 1400           | 1414     | -1.5      | -2.47    |
+| Safety Blade 2 Worth (pcm)             | 1717±14             | 1730           | 1793     | -0.75     | -4.24    |
+| Safety Blade 3 Worth (pcm)             | 1835±14             | 1900           | 1841     | -3.4      | -0.49    |
+| Regulating Blade Worth (pcm)           | 780±13              | 760            | 733      | 2.63      | 6.41     |
+| K_eff at Critical Position             | 1.00046±0.00006     | 1.00000        | –        | 0.046     | –        |
+| Prompt Neutron Lifetime (Λ) (μs)       | 218.7               | –              | 202.8    | –         | 7.84     |
+| Delayed Neutron Fraction (β_eff) (pcm) | 743±7               | 742±1          | 740      | 0.13      | 0.41     |
 
-#### Table 2. Reactivity Parameters Comparison at 70,648 kWh (July 2022)
+<sup>a</sup> δ₁ = ((OpenMC − Experimental) / Experimental) × 100  
+<sup>b</sup> δ₂ = ((OpenMC − MCNP) / MCNP) × 100
 
-| Parameter                    | OpenMC Estimation       | Measured      | Difference (%) |
-|-----------------------------|-------------------------|---------------|----------------|
-| Excess Reactivity (pcm)     | 957±11                  | 929           | 3.0            |
-| Shutdown Margin (pcm)       | 2879±14                 | 2800          | 2.8            |
-| Safety Blade 1 Worth (pcm)  | 1312±13                 | 1248          | 5.1            |
-| Safety Blade 2 Worth (pcm)  | 1641±12                 | 1564          | 4.9            |
-| Safety Blade 3 Worth (pcm)  | 1753±13                 | 1823          | -3.8           |
-| Regulating Blade Worth (pcm)| 883±11                  | 915           | -3.5           |
+#### Table 2. Reactivity and Kinetics Parameters Comparison at 70,648 kWh (July 2022)
+
+| Parameter                              | OpenMC Estimation       | Measured      | Difference (%) |
+|----------------------------------------|-------------------------|---------------|----------------|
+| Excess Reactivity (pcm)                | 957±11                  | 929           | 3.0            |
+| Shutdown Margin (pcm)                  | 2879±14                 | 2800          | 2.8            |
+| Safety Blade 1 Worth (pcm)             | 1312±13                 | 1248          | 5.1            |
+| Safety Blade 2 Worth (pcm)             | 1641±12                 | 1564          | 4.9            |
+| Safety Blade 3 Worth (pcm)             | 1753±13                 | 1823          | -3.8           |
+| Regulating Blade Worth (pcm)           | 883±11                  | 915           | -3.5           |
+| K_eff at Critical Position             | 1.00138±0.00007         | 1.00000       | 0.138          |
+| Delayed Neutron Fraction (β_eff) (pcm) | 717±8                   | 733±10        | -2.2           |
 
 These comparisons show good agreement overall. However, due to discrepancies in the experimental data (arising from differences in measurement methodology and assumptions), further validation is still recommended for increased confidence.
-
-### 2. Multiplication at Experimental Critical Position
-
-The multiplication factor (`k_eff`) was simulated at the experimentally known critical control blade positions. The result showed excellent agreement with the known critical condition, validating the geometry and neutron transport fidelity of the model.
-
-#### Table 3. Critical Position Multiplication Comparison
-
-| Core Condition     | OpenMC k_eff         | Measured k_eff | Difference (%) |
-|--------------------|----------------------|----------------|----------------|
-| Fresh Core         | 1.00005±0.00007      | 1.00000        | 0.005          |
-| Core in July 2022  | 1.00038±0.00007      | 1.00000        | 0.038          |
-
-### 3. β-effective Comparison
-
-The delayed neutron fraction (`β_eff`) was calculated using the adjoint-weighted method in OpenMC and compared to experimental estimates. The agreement was within ~1–3.5% depending on the core condition, indicating reliable time-dependent behavior modeling.
-
-#### Table 4. β-effective Comparison Between Fresh and Current Core
-
-| Core Condition     | OpenMC β_eff (pcm) | Measured β_eff (pcm) | Difference (%) |
-|--------------------|--------------------|-----------------------|----------------|
-| Fresh Core         | 752±9              | 743±10                | 1.2            |
-| Core in July 2022  | 707±8              | 733±10                | -3.5           |
 
 ### 4. Fuel Burnup and Isotopic Buildup Tracking
 
 The model's predictions for U-235 depletion and Pu-239/Pu-241 buildup were compared to operator-reported estimates at three burnup levels. Results are presented below:
 
-#### Table 5. Uranium and Plutonium Tracking Comparison at Different Burnup Steps
+#### Table 3. Uranium and Plutonium Tracking Comparison at Different Burnup Steps
 
 | Burnup (kWh) | U-235 Loss (%) (Model) | U-235 Loss (%) (Reported) | Difference (%) | Pu-239/241 Gain (%) (Model) | Pu-239/241 Gain (%) (Reported) | Difference (%) |
 |--------------|------------------------|----------------------------|----------------|------------------------------|--------------------------------|----------------|
@@ -115,7 +103,7 @@ This comparison further supports the model's reliability in long-term isotopic e
 
 ## Areas for Improvement
 
-While the UFTR OpenMC model demonstrates strong agreement with experimental data, several enhancements are identified that could further improve its accuracy and extend its utility. These areas are listed below in order of significance.
+While the model demonstrates strong agreement with experimental data, several enhancements are identified that could further improve its accuracy and extend its utility. These areas are listed below in order of significance.
 
 ### 1. Depletion Modeling and Operational History Representation
 

@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <settings>
   <run_mode>eigenvalue</run_mode>
-  <particles>1000</particles>
-  <batches>500</batches>
+  <particles>50000</particles>
+  <batches>503</batches>
   <inactive>100</inactive>
   <source particle="neutron" strength="1.0" type="independent">
     <space type="point">
@@ -15,8 +15,8 @@
     <tallies>false</tallies>
   </output>
   <energy_mode>continuous-energy</energy_mode>
-  <entropy_mesh>1</entropy_mesh>
-  <mesh id="1">
+  <entropy_mesh>2</entropy_mesh>
+  <mesh id="2">
     <dimension>10 10 10</dimension>
     <lower_left>-28.0 -29.01 -30.02</lower_left>
     <upper_right>28.0 29.01 30.02</upper_right>

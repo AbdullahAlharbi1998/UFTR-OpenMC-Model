@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <settings>
   <run_mode>eigenvalue</run_mode>
-  <particles>500000</particles>
+  <particles>1000</particles>
   <batches>500</batches>
   <inactive>100</inactive>
   <source particle="neutron" strength="1.0" type="independent">

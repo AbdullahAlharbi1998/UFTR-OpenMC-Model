@@ -2,7 +2,7 @@ from fresh_core.fresh_core import fuel
 import openmc.deplete
 from scipy import constants
 
-results = openmc.deplete.Results(filename='depletion_results_before_plates.h5')
+results = openmc.deplete.Results(filename='depletion_results.h5')
 
 # if you add more isotopes, their concentration in the fuel will be outputted in units at%
 selected_nuclides = [
