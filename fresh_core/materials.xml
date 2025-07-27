@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <materials>
-  <material depletable="true" id="17" name="U3Si2Al" volume="5619.0531936">
+  <material depletable="true" id="1" name="U3Si2Al" volume="5619.0531936">
     <density units="g/cm3" value="5.55"/>
     <nuclide name="U238" wo="0.50409192"/>
     <nuclide name="U235" wo="0.12407060000000002"/>
@@ -22,7 +22,7 @@
     <nuclide name="N15" wo="6.531439840022731e-06"/>
     <nuclide name="Al27" wo="0.000398"/>
   </material>
-  <material id="18" name="Al6061">
+  <material id="2" name="Al6061">
     <density units="g/cm3" value="2.7"/>
     <nuclide ao="0.9674" name="Al27"/>
     <nuclide ao="0.0002004835" name="Fe54"/>
@@ -52,7 +52,7 @@
     <nuclide ao="0.0001748184" name="Cr53"/>
     <nuclide ao="4.3516e-05" name="Cr54"/>
   </material>
-  <material id="19" name="Water">
+  <material id="3" name="Water">
     <density units="g/cm3" value="0.9975"/>
     <nuclide ao="1.99968852" name="H1"/>
     <nuclide ao="0.00031148" name="H2"/>
@@ -61,7 +61,7 @@
     <nuclide ao="0.0020004" name="O18"/>
     <sab name="c_H_in_H2O"/>
   </material>
-  <material id="20" name="graphite">
+  <material id="4" name="graphite">
     <density units="g/cm3" value="1.6"/>
     <nuclide ao="0.98891705539" name="C12"/>
     <nuclide ao="0.01107794461" name="C13"/>
@@ -69,7 +69,7 @@
     <nuclide ao="4.009e-06" name="B11"/>
     <sab name="c_Graphite"/>
   </material>
-  <material id="21" name="cadmium" volume="134.472108">
+  <material id="5" name="cadmium" volume="134.472108">
     <density units="g/cm3" value="8.75"/>
     <nuclide ao="0.01245" name="Cd106"/>
     <nuclide ao="0.00888" name="Cd108"/>
@@ -80,13 +80,13 @@
     <nuclide ao="0.28754" name="Cd114"/>
     <nuclide ao="0.07512" name="Cd116"/>
   </material>
-  <material id="22" name="magnesium">
+  <material id="6" name="magnesium">
     <density units="g/cm3" value="1.74"/>
     <nuclide ao="0.78951" name="Mg24"/>
     <nuclide ao="0.1002" name="Mg25"/>
     <nuclide ao="0.11029" name="Mg26"/>
   </material>
-  <material id="23" name="Air">
+  <material id="7" name="Air">
     <density units="g/cm3" value="0.0012"/>
     <nuclide ao="0.209500326" name="O16"/>
     <nuclide ao="7.959e-05" name="O17"/>
@@ -99,7 +99,7 @@
     <nuclide ao="4.94461e-05" name="C12"/>
     <nuclide ao="5.539e-07" name="C13"/>
   </material>
-  <material id="24" name="barytes_concrete">
+  <material id="8" name="barytes_concrete">
     <density units="g/cm3" value="3.5"/>
     <nuclide name="Ba130" wo="0.0005005104705753436"/>
     <nuclide name="Ba132" wo="0.00046201028289051966"/>
