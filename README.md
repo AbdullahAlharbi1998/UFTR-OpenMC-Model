@@ -21,7 +21,7 @@ The UFTR is a training and research reactor located at the University of Florida
 - **Cooling and Moderation**: Water flows from the bottom to the top between the plates and inside the boxes, serving as both the coolant and the neutron moderator
 - **Reflector**: The core is composed and surrounded by a graphite, serving as both moderatot and reflector
 
-## Core Design
+## geometry schematics
 
 ### Color Convention
 
@@ -39,11 +39,11 @@ The UFTR is a training and research reactor located at the University of Florida
 
 
 
-c:\OpenMC\UFTR\GitHub Repository\fresh_core\Figures\full geometry radial.png
-c:\OpenMC\UFTR\GitHub Repository\march2025_core\figures\XY zoomed.png
-c:\OpenMC\UFTR\GitHub Repository\fresh_core\Figures\full geometry axial.png
-c:\OpenMC\UFTR\GitHub Repository\march2025_core\figures\XZ zoomed.png
-c:\OpenMC\UFTR\GitHub Repository\march2025_core\figures\YZ.png
+![full geometry radial.png](fresh_core%2FFigures%2Ffull%20geometry%20radial.png)
+![XY zoomed.png](march2025_core%2Ffigures%2FXY%20zoomed.png)
+![full geometry axial.png](fresh_core%2FFigures%2Ffull%20geometry%20axial.png)
+![XZ zoomed.png](march2025_core%2Ffigures%2FXZ%20zoomed.png)
+![YZ.png](march2025_core%2Ffigures%2FYZ.png)
 
 
 ## Model Benchmarking and Validation
