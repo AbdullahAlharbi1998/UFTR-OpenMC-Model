@@ -1,68 +1,108 @@
+import openmc
 import openmc as mc
-import openmc.deplete
+import numpy as np
+from openmc.lib import tally
+import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 
-mc.config['cross_sections'] = '/home/eastdusty/openmc_env/share/data/endfb80/endfb-viii.0-hdf5/cross_sections.xml'
+mc.config['cross_sections'] = "/home/eastdusty/openmc_env/share/data/endfb80/endfb-vii.1-hdf5/cross_sections.xml"
 # The cross-sections library used in this model was ENDF/B-VIII.0
 # It can be downloaded using this link: https://openmc.org/official-data-libraries/
 
-
+# /home/eastdusty/openmc_env/share/data/endfb80/endfb-viii.0-hdf5/cross_sections.xml
 
 
 
 #####################################################################################
 #                              MATERIALS DEFINITION                                 #
 #####################################################################################
+
 '''
 The below is the total volume of both fuel and cadmium, it was calculated because it is mandatory to be provided in order to run a depletion 
 calculation, cadmium of course turned out to have negligible change, the lost fraction of Cd-113 at 105,000 kWh was less than 0.1%
 '''
 
-fuel_volume = ((30.01* 2) * (2.98 * 2) * (0.0255 * 2)) * 14 * 22
+fuel_plate_volume = ((30.01 * 2) * (2.98 * 2) * (0.0255 * 2)) * 14 * 22
+fuel_plate_mass = 5.5 * ((30.01 * 2) * (2.98 * 2) * (0.0255 * 2))
+
 cadmium_volume = ((((34.3 + 27.9)/2) * (12.7) * (0.102)) * 3) + (((30.5 + 27.9)/2) * (4.57) * (0.102))
+total_impurity_fraction = 9.0677574E-04
 
 fuel = mc.Material(name='U3Si2Al')
 fuel.set_density('g/cm3', 5.55)
 
+fuel.volume = fuel_plate_volume
+fuel.depletable = True
+
+normalizer = 1.24736357E+01 / 1.250E+01
+
 # Uranium content in U3Si2-Al
-fuel.add_nuclide('U238', 0.6298 * 0.8004, 'wo')
-fuel.add_nuclide('U235', 0.6298 * 0.197, 'wo')
-fuel.add_nuclide('U234', 0.6298 * 0.0026, 'wo')
+fuel.add_nuclide('U234', 1.03E-01 , 'wo')
+fuel.add_nuclide('U235', 1.24736357E+01 , 'wo')
+fuel.add_nuclide('U236', 6.57E-02 , 'wo')
+fuel.add_nuclide('U238', 5.08E+01 , 'wo')
 
 # Silicon in U3Si2-Al
-fuel.add_element('Si', 0.0443115, 'wo')
+fuel.add_element('Si', 5E+00 , 'wo')
 
 # Aluminum in U3Si2-Al
-fuel.add_element('Al', 0.3258885 + 0.000398, 'wo')
+fuel.add_element('Al', 3.23E+01 , 'wo')
 
-# Fuel impurities taken from NUREG-1313, Boron is not included in the report, but it was added in trace amount, it only adds about 100 pcm.
 
-fuel.add_element('C', 0.000398, 'wo')
-fuel.add_element('Fe', 0.000547, 'wo')
-fuel.add_element('O', 0.001283, 'wo')
-fuel.add_element('N', 0.001665, 'wo')
-
-# Boron is one of the impurities that exists in trace amounts and contribute to reactivity slightly, always worth investigating and modifying, 0-50 ppm is a fair assumption
-fuel.add_element("B", 3e-6, 'wo')
-fuel.add_element("Cd", 3e-6, 'wo')
-
-fuel.volume = fuel_volume
-fuel.depletable = True
+# impurities cited from the Safety Analysis Report which reported the impurities based on BWXT (fuel and cladding manufacturer) estimates
+fuel.add_element("Al", (fuel_plate_mass * (8.95E-05)), "wo")
+fuel.add_element("Ba", (fuel_plate_mass * (1.36E-06)), "wo")
+fuel.add_element("Be", (fuel_plate_mass * (3.40E-07)), "wo")
+fuel.add_element("B",  (fuel_plate_mass * ((1.82E-07) + (3.21E-06))), "wo")
+fuel.add_element("Cd", (fuel_plate_mass * ((3.40E-07) + (3.21E-06))), "wo")
+fuel.add_element("Ca", (fuel_plate_mass * (1.36E-05)), "wo")
+fuel.add_element("C",  (fuel_plate_mass * (1.66E-04)), "wo")
+fuel.add_element("Cr", (fuel_plate_mass * (1.25E-05)), "wo")
+fuel.add_element("Co", (fuel_plate_mass * (3.40E-06)), "wo")
+fuel.add_element("Cu", (fuel_plate_mass * ((6.85E-05) + (3.21E-06))), "wo")
+fuel.add_element("Eu", (fuel_plate_mass * (1.36E-07)), "wo")
+fuel.add_element("Gd", (fuel_plate_mass * (1.36E-07)), "wo")
+fuel.add_element("Fe", (fuel_plate_mass * ((4.13E-04) + (5.35E-04))), "wo")
+fuel.add_element("Pb", (fuel_plate_mass * (3.3974E-07)), "wo")
+fuel.add_element("Li", (fuel_plate_mass * ((6.80E-08) + (3.21E-06))), "wo")
+fuel.add_element("Mg", (fuel_plate_mass * (6.80E-06)), "wo")
+fuel.add_element("Mn", (fuel_plate_mass * (5.89E-06)), "wo")
+fuel.add_element("Mo", (fuel_plate_mass * (2.04E-06)), "wo")
+fuel.add_element("Ni", (fuel_plate_mass * (2.94E-05)), "wo")
+fuel.add_element("N",  (fuel_plate_mass * (3.74E-05)), "wo")
+fuel.add_element("P",  (fuel_plate_mass * (1.36E-05)), "wo")
+fuel.add_element("Sm", (fuel_plate_mass * (1.36E-07)), "wo")
+fuel.add_element("Ag", (fuel_plate_mass * (6.79E-07)), "wo")
+fuel.add_element("Na", (fuel_plate_mass * (6.79E-06)), "wo")
+fuel.add_element("Sn", (fuel_plate_mass * (6.79E-07)), "wo")
+fuel.add_element("W",  (fuel_plate_mass * (1.47E-05)), "wo")
+fuel.add_element("V",  (fuel_plate_mass * (3.06E-06)), "wo")
+fuel.add_element("Zn", (fuel_plate_mass * ((1.36E-05) + (6.41E-05))), "wo")
+fuel.add_element("Zr", (fuel_plate_mass * (2.60E-06)), "wo")
+fuel.add_element("O",  (fuel_plate_mass * 3.11E-04), "wo")
 
 
 
 # Cladding
 Al6061 = mc.Material(name='Al6061')
-Al6061.add_element('Al', 0.96740, 'ao')
-Al6061.add_element('Fe', 0.00343, 'ao')
-Al6061.add_element('Mg', 0.01348, 'ao')
-Al6061.add_element('Si', 0.00779 , 'ao')
-Al6061.add_element('Cu', 0.00172, 'ao')
-Al6061.add_element('Zn', 0.00209, 'ao')
-Al6061.add_element('Ti', 0.00172, 'ao')
-Al6061.add_element('Cr', 0.00184, 'ao')
 
-# Boron here also falls under the same assumption, it is known to exist in trace amounts, so 0-50 ppm is a fair assumption
-Al6061.add_element('B', 10e-6, 'ao')
+# Composition also cited from the Safety Analysis Report which reported the impurities based on BWXT (fuel and cladding manufacturer) estimates
+Al6061.add_element("Al", 97.599, "wo")
+Al6061.add_element("Si", 0.500, "wo" )
+Al6061.add_element("Fe", 0.354, "wo" )
+Al6061.add_element("Cu", 0.294, "wo")
+Al6061.add_element("Mn", 0.070, "wo" )
+Al6061.add_element("Mg", 0.924, "wo" )
+Al6061.add_element("Cr", 0.135, "wo" )
+Al6061.add_element("Zn", 0.089, "wo" )
+Al6061.add_element("V",  0.010, "wo" )
+Al6061.add_element("Zr", 0.003, "wo" )
+Al6061.add_element("B",  0.001, "wo" )
+Al6061.add_element("Co", 0.001, "wo" )
+Al6061.add_element("Ga", 0.005, "wo" )
+Al6061.add_element("Cd", 0.001, "wo" )
+Al6061.add_element("Li", 0.001, "wo")
+
 Al6061.set_density('g/cm3', 2.7)
 
 Al6061.depletable = False
@@ -72,17 +112,23 @@ Al6061.depletable = False
 water = mc.Material(name='Water')
 water.add_element('H', 2)
 water.add_element('O', 1)
-water.set_density('g/cm3', 0.9975)
+water.set_density('g/cm3', 0.996)
 water.add_s_alpha_beta('c_H_in_H2O')
 
 water.depletable = False
 
 
-
+# 5 ppm boron impurity in graphite is reported in the Safety Analysis Report to be estimated via chemical analysis done on a sample of that nuclear grade graphite at Idaho National Laboratory (INL)
+'''
+The true density of graphite is 1.6 g/cm3. However, using CSG to define the geometry instead of CAD really overestimates 
+the content of graphite, as it fills gaps that are caused by stacking, holes within some graphite blocks for irradiation 
+purposes, and other geometric considerations causing less concentration of graphite within the core. Therefore, the density 
+of graphite was reduced slightly by 0.005 g/cm3 which produced slightly more consistent results.
+'''
 graphite = mc.Material(name='graphite')
 graphite.add_element('C', 1 - 5e-6)
 graphite.add_element('B', 5e-6)
-graphite.set_density('g/cm3', 1.6)
+graphite.set_density('g/cm3', 1.595)
 graphite.add_s_alpha_beta('c_Graphite')
 
 graphite.depletable = False
@@ -91,8 +137,8 @@ graphite.depletable = False
 cadmium = mc.Material(name='cadmium')
 cadmium.add_element('Cd', 1)
 cadmium.set_density('g/cm3', 8.75)
-cadmium.volume = cadmium_volume
-cadmium.depletable = False
+# cadmium.volume = cadmium_volume
+# cadmium.depletable = True
 
 
 
@@ -133,10 +179,10 @@ barite_concrete.depletable = False
 
 
 materials = mc.Materials([fuel, Al6061, water, air, graphite, barite_concrete, cadmium, magnesium])
-materials.export_to_xml()
+
 
 colors = {fuel: 'red', Al6061: 'silver', water: 'blue', graphite: 'grey', air: 'black',
-          cadmium: 'green', magnesium: 'purple', barite_concrete: 'brown'}
+          cadmium: 'green', magnesium: 'purple', barite_concrete: 'saddlebrown'}
 
 
 
@@ -613,24 +659,54 @@ regulating_blade_rotation_cell = mc.Cell(fill= regulating_blade_universe)
 
 #######################################################################################################################################################
 #######################################################################################################################################################
+'''
+BLADE INSERTION AND WITHDRAWAL:
+ 
+Blades rotate is between 0 and 45 degrees, 0 being fully inserted, 1000 being fully withdrawn. But in the control room, it 
+is normalized out of 1000, 1000 being fully withdrawn which corresponds to 45 degrees, and 0 being fully inserted  corresponding to 0 degrees
 
-# BLADE INSERTION AND WITHDRAWAL: Blades rotate between 0 and 45 degrees, but in the control room, it is normalized out of 1000, 1000 being fully withdrawn which corresponds to 45 degrees, and 0 being fully inserted corresponding to 0 degrees
+The function below will handle rotation of blades and can take units of exactly as observed in the control room (0-1000) or degrees or in degrees (0-45)
 
-# The critical position of UFTR in 2006 when the core was fresh ====> Safety Blades 1,2,3 = 570 ---- Regulating Blade = 320
-
-#######################################################################################################################################################
-                                                                    #####################################################################################
-safety_blade_1_rotation_cell.rotation = (0,0,0) # fully inserted    #####################################################################################
-                                                                    #####################################################################################
-safety_blade_2_rotation_cell.rotation = (0,0,0) # fully inserted    #####################################################################################
-                                                                    #####################################################################################
-safety_blade_3_rotation_cell.rotation = (45,0,0) # fully withdrawn  #####################################################################################
-                                                                    #####################################################################################
-                                                                    #####################################################################################
-regulating_blade_rotation_cell.rotation = (0,0,0) # fully inserted  #####################################################################################
-                                                                    #####################################################################################
+The critical position of UFTR corresponding to this fresh core model was ====> Safety Blades 1,2,3 = 570 ---- Regulating Blade = 325 
+'''
 #######################################################################################################################################################
 #######################################################################################################################################################
+
+def set_control_blades_positions(SB1, SB2, SB3, RB, unit):
+    if unit == "degrees":
+        safety_blade_1_rotation_cell.rotation = (SB1, 0, 0)
+
+        safety_blade_2_rotation_cell.rotation = (SB2, 0, 0)
+
+        safety_blade_3_rotation_cell.rotation = (SB3, 0, 0)
+
+        regulating_blade_rotation_cell.rotation = (RB, 0, 0)
+
+    if unit == "control room 0-1000 units":
+        safety_blade_1_rotation_cell.rotation = ((SB1 * 0.045), 0,0)
+
+        safety_blade_2_rotation_cell.rotation = ((SB2 * 0.045), 0,0)
+
+        safety_blade_3_rotation_cell.rotation = ((SB3 * 0.045), 0,0)
+
+        regulating_blade_rotation_cell.rotation = ((RB * 0.045), 0,0)
+
+
+def verify_control_blades_positions(blades, max_angle=45):
+    blades = [safety_blade_1_rotation_cell, safety_blade_2_rotation_cell,
+              safety_blade_3_rotation_cell, regulating_blade_rotation_cell]
+    for blade in blades:
+        x, y, z = blade.rotation
+
+        if not 0 <= x <= max_angle:
+            raise ValueError(f"Rotation of {blade} must be between 0 and 1000 units, corresponding to rotation between 0 and 45 degrees")
+
+        if y != 0 or z != 0:
+            raise ValueError(f"{blade} has invalid Y/Z rotation: ({y}, {z}), they must both be 0, the correct rotation axis is x")
+
+#######################################################################################################################################################
+#######################################################################################################################################################
+
 
 # Now translating blades back into their actual position inside the shroud
 
@@ -720,6 +796,13 @@ regulating_blade_left = box_5_right
 
 regulating_blade_cell.region = (-regulating_blade_back & +regulating_blade_front & + regulating_blade_bottom
                                 & -regulating_blade_top & -regulating_blade_right & +regulating_blade_left)
+
+
+
+
+#####################################################################################
+#                                REST OF THE GEOMETRY                               #
+#####################################################################################
 
 CORE_HEIGHT = 5 * 30.48
 CORE_LENGTH = 5 * 30.48
@@ -875,7 +958,8 @@ final_cell = mc.Cell(fill=final_universe, region=-top & +bottom & -right & +left
 root_universe = mc.Universe(cells=[final_cell])
 
 geometry = mc.Geometry(root_universe)
-geometry.export_to_xml()
+
+
 
 
 
@@ -883,190 +967,295 @@ geometry.export_to_xml()
 ######################################################################################
 #                                   MESHES & TALLIES                                 #
 ######################################################################################
-'''
-# BOX_Y_SPACING
-# BOX_WIDTH
-# BOX_LENGTH
-# SHROUD_WIDTH
-# FUEL_WIDTH
-# ASSEMBLY_LENGTH
-BOX_WALL = 0.318
-WATER_SPACING = 0.282
-EXTRA_CLAD = 3.615 - 2.98
+def include_tallies():
 
+    """
+    # BOX_Y_SPACING
+    # BOX_WIDTH
+    # BOX_LENGTH
+    # SHROUD_WIDTH
+    # FUEL_WIDTH
+    # ASSEMBLY_LENGTH
+    BOX_WALL = 0.318
+    WATER_SPACING = 0.282
+    EXTRA_CLAD = 3.615 - 2.98
 
-# verified
-X1L = -(BOX_WIDTH/2) - SHROUD_WIDTH - BOX_WIDTH + BOX_WALL + EXTRA_CLAD
-Y1L = -(BOX_Y_SPACING/2) - BOX_LENGTH + BOX_WALL + (WATER_SPACING/2)
-X1U = -(BOX_WIDTH/2) - SHROUD_WIDTH - EXTRA_CLAD - BOX_WALL
-Y1U = -(BOX_Y_SPACING/2) - BOX_WALL - (WATER_SPACING/2)
 
-# verified
-X2L = -(BOX_WIDTH/2) + EXTRA_CLAD + BOX_WALL
-Y2L = Y1L
-X2U = (BOX_WIDTH/2) - EXTRA_CLAD - BOX_WALL
-Y2U = Y1U
+    # verified
+    X1L = -(BOX_WIDTH/2) - SHROUD_WIDTH - BOX_WIDTH + BOX_WALL + EXTRA_CLAD
+    Y1L = -(BOX_Y_SPACING/2) - BOX_LENGTH + BOX_WALL + (WATER_SPACING/2)
+    X1U = -(BOX_WIDTH/2) - SHROUD_WIDTH - EXTRA_CLAD - BOX_WALL
+    Y1U = -(BOX_Y_SPACING/2) - BOX_WALL - (WATER_SPACING/2)
 
-# verified
-X3L = (BOX_WIDTH/2) + SHROUD_WIDTH + BOX_WALL + EXTRA_CLAD
-Y3L = Y1L
-X3U = (BOX_WIDTH/2) + SHROUD_WIDTH + BOX_WIDTH - BOX_WALL - EXTRA_CLAD
-Y3U = Y1U
+    # verified
+    X2L = -(BOX_WIDTH/2) + EXTRA_CLAD + BOX_WALL
+    Y2L = Y1L
+    X2U = (BOX_WIDTH/2) - EXTRA_CLAD - BOX_WALL
+    Y2U = Y1U
 
+    # verified
+    X3L = (BOX_WIDTH/2) + SHROUD_WIDTH + BOX_WALL + EXTRA_CLAD
+    Y3L = Y1L
+    X3U = (BOX_WIDTH/2) + SHROUD_WIDTH + BOX_WIDTH - BOX_WALL - EXTRA_CLAD
+    Y3U = Y1U
 
-X4L = X1L
-Y4L = (BOX_Y_SPACING/2) + BOX_WALL + (WATER_SPACING/2)
-X4U = X1U
-Y4U = (BOX_Y_SPACING/2) + BOX_LENGTH - BOX_WALL - (WATER_SPACING/2)
 
-X5L = X2L
-Y5L = Y4L
-X5U = X2U
-Y5U = Y4U
+    X4L = X1L
+    Y4L = (BOX_Y_SPACING/2) + BOX_WALL + (WATER_SPACING/2)
+    X4U = X1U
+    Y4U = (BOX_Y_SPACING/2) + BOX_LENGTH - BOX_WALL - (WATER_SPACING/2)
 
-X6L = X3L
-Y6L = Y4L
-X6U = X3U
-Y6U = Y4U
+    X5L = X2L
+    Y5L = Y4L
+    X5U = X2U
+    Y5U = Y4U
 
+    X6L = X3L
+    Y6L = Y4L
+    X6U = X3U
+    Y6U = Y4U
 
-ZL = -30.01
-ZU = 30.01
 
+    ZL = -30.01
+    ZU = 30.01
 
 
-box_1_mesh_filter = mc.RegularMesh()
-box_1_mesh_filter.lower_left = (X1L, Y1L, ZL)
 
-box_1_mesh_filter.upper_right = (X1U, Y1U, ZU)
+    box_1_mesh_filter = mc.RegularMesh()
+    box_1_mesh_filter.lower_left = (X1L, Y1L, ZL)
 
-box_1_mesh_filter.dimension = (2, 2, 1)
+    box_1_mesh_filter.upper_right = (X1U, Y1U, ZU)
 
-box_1_mesh = mc.MeshFilter(box_1_mesh_filter)
+    box_1_mesh_filter.dimension = (2, 2, 1)
 
-box_1_tally = mc.Tally(name = 'box 1 power')
-box_1_tally.filters = [box_1_mesh]
-box_1_tally.scores=['fission', 'flux', 'fission-q-recoverable']
+    box_1_mesh = mc.MeshFilter(box_1_mesh_filter)
 
+    box_1_tally = mc.Tally(name = 'box 1 power')
+    box_1_tally.filters = [box_1_mesh]
+    box_1_tally.scores=['fission', 'flux', 'fission-q-recoverable']
 
 
-box_2_mesh_filter = mc.RegularMesh()
-box_2_mesh_filter.lower_left = (X2L, Y2L, ZL)
 
-box_2_mesh_filter.upper_right = (X2U, Y2U, ZU)
+    box_2_mesh_filter = mc.RegularMesh()
+    box_2_mesh_filter.lower_left = (X2L, Y2L, ZL)
 
-box_2_mesh_filter.dimension = (2, 2, 1)
+    box_2_mesh_filter.upper_right = (X2U, Y2U, ZU)
 
-box_2_mesh = mc.MeshFilter(box_2_mesh_filter)
+    box_2_mesh_filter.dimension = (2, 2, 1)
 
-box_2_tally = mc.Tally(name = 'box 2 power')
-box_2_tally.filters = [box_2_mesh]
-box_2_tally.scores=['fission', 'flux', 'fission-q-recoverable']
+    box_2_mesh = mc.MeshFilter(box_2_mesh_filter)
 
+    box_2_tally = mc.Tally(name = 'box 2 power')
+    box_2_tally.filters = [box_2_mesh]
+    box_2_tally.scores=['fission', 'flux', 'fission-q-recoverable']
 
 
-box_3_mesh_filter = mc.RegularMesh()
-box_3_mesh_filter.lower_left = (X3L, Y3L, ZL)
 
-box_3_mesh_filter.upper_right = (X3U, Y3U, ZU)
+    box_3_mesh_filter = mc.RegularMesh()
+    box_3_mesh_filter.lower_left = (X3L, Y3L, ZL)
 
-box_3_mesh_filter.dimension = (2, 2, 1)
+    box_3_mesh_filter.upper_right = (X3U, Y3U, ZU)
 
-box_3_mesh = mc.MeshFilter(box_3_mesh_filter)
+    box_3_mesh_filter.dimension = (2, 2, 1)
 
-box_3_tally = mc.Tally(name = 'box 3 power')
-box_3_tally.filters = [box_3_mesh]
-box_3_tally.scores=['fission', 'flux', 'fission-q-recoverable']
+    box_3_mesh = mc.MeshFilter(box_3_mesh_filter)
 
+    box_3_tally = mc.Tally(name = 'box 3 power')
+    box_3_tally.filters = [box_3_mesh]
+    box_3_tally.scores=['fission', 'flux', 'fission-q-recoverable']
 
 
-box_4_mesh_filter = mc.RegularMesh()
-box_4_mesh_filter.lower_left = (X4L, Y4L, ZL)
 
-box_4_mesh_filter.upper_right = (X4U, Y4U, ZU)
+    box_4_mesh_filter = mc.RegularMesh()
+    box_4_mesh_filter.lower_left = (X4L, Y4L, ZL)
 
-box_4_mesh_filter.dimension = (2, 2, 1)
+    box_4_mesh_filter.upper_right = (X4U, Y4U, ZU)
 
-box_4_mesh = mc.MeshFilter(box_4_mesh_filter)
+    box_4_mesh_filter.dimension = (2, 2, 1)
 
-box_4_tally = mc.Tally(name = 'box 4 power')
-box_4_tally.filters = [box_4_mesh]
-box_4_tally.scores=['fission', 'flux', 'fission-q-recoverable']
+    box_4_mesh = mc.MeshFilter(box_4_mesh_filter)
 
+    box_4_tally = mc.Tally(name = 'box 4 power')
+    box_4_tally.filters = [box_4_mesh]
+    box_4_tally.scores=['fission', 'flux', 'fission-q-recoverable']
 
 
 
-box_5_mesh_filter = mc.RegularMesh()
-box_5_mesh_filter.lower_left = (X5L, Y5L, ZL)
 
-box_5_mesh_filter.upper_right = (X5U, Y5U, ZU)
+    box_5_mesh_filter = mc.RegularMesh()
+    box_5_mesh_filter.lower_left = (X5L, Y5L, ZL)
 
-box_5_mesh_filter.dimension = (2, 2, 1)
+    box_5_mesh_filter.upper_right = (X5U, Y5U, ZU)
 
-box_5_mesh = mc.MeshFilter(box_5_mesh_filter)
+    box_5_mesh_filter.dimension = (2, 2, 1)
 
-box_5_tally = mc.Tally(name = 'box 5 power')
-box_5_tally.filters = [box_5_mesh]
-box_5_tally.scores=['fission', 'flux', 'fission-q-recoverable']
+    box_5_mesh = mc.MeshFilter(box_5_mesh_filter)
 
+    box_5_tally = mc.Tally(name = 'box 5 power')
+    box_5_tally.filters = [box_5_mesh]
+    box_5_tally.scores=['fission', 'flux', 'fission-q-recoverable']
 
 
-box_6_mesh_filter = mc.RegularMesh()
-box_6_mesh_filter.lower_left = (X6L, Y6L, ZL)
 
-box_6_mesh_filter.upper_right = (X6U, Y6U, ZU)
+    box_6_mesh_filter = mc.RegularMesh()
+    box_6_mesh_filter.lower_left = (X6L, Y6L, ZL)
 
-box_6_mesh_filter.dimension = (2, 2, 1)
+    box_6_mesh_filter.upper_right = (X6U, Y6U, ZU)
 
-box_6_mesh = mc.MeshFilter(box_6_mesh_filter)
+    box_6_mesh_filter.dimension = (2, 2, 1)
 
-box_6_tally = mc.Tally(name = 'box 6 power')
-box_6_tally.filters = [box_6_mesh]
-box_6_tally.scores=['fission', 'flux', 'fission-q-recoverable']
+    box_6_mesh = mc.MeshFilter(box_6_mesh_filter)
 
+    box_6_tally = mc.Tally(name = 'box 6 power')
+    box_6_tally.filters = [box_6_mesh]
+    box_6_tally.scores=['fission', 'flux', 'fission-q-recoverable']
 
-print(materials)
-material_filter = mc.MaterialFilter([1,2,3,4,5,6,7,8])
 
-generation_time_tally = mc.Tally(name = 'generation time tallies')
-generation_time_tally.filters = [material_filter]
-generation_time_tally.scores =['inverse-velocity', 'flux', 'absorption', 'prompt-nu-fission', 'fission']
+    material_filter = mc.MaterialFilter([1,2,3,4,5,6,7,8])
 
-independent_inverse_velocity_tally = mc.Tally(name = 'generation time tallies')
-independent_inverse_velocity_tally.scores = ['inverse-velocity']
+    generation_time_tally = mc.Tally(name = 'generation time tallies')
+    generation_time_tally.filters = [material_filter]
+    generation_time_tally.scores =['inverse-velocity', 'flux', 'absorption', 'prompt-nu-fission', 'fission']
 
+    independent_inverse_velocity_tally = mc.Tally(name = 'generation time tallies')
+    independent_inverse_velocity_tally.scores = ['inverse-velocity']
 
-tallies = mc.Tallies([independent_inverse_velocity_tally, generation_time_tally, 
-                      box_1_tally, box_2_tally, box_3_tally, box_4_tally, box_5_tally, box_6_tally])
-tallies.export_to_xml()
-'''
-(300/3000) * (210/2100) * 60
 
-core_mesh_filter = openmc.RegularMesh()
-core_mesh_filter.lower_left = (-100, -105, -30)
-core_mesh_filter.upper_right = (200, 105, 30)
-core_mesh_filter.dimension = (2100, 3000, 1)
-core_mesh = openmc.MeshFilter(core_mesh_filter)
+    # (300/3000) * (210/2100) * 60
 
-thermal_energy = (0, 0.5)
-thermal_energy_filter = openmc.EnergyFilter(thermal_energy)
 
+    core_mesh_filter_1 = openmc.RegularMesh()
+    core_mesh_filter_1.lower_left = (-100, -105, -30)
+    core_mesh_filter_1.upper_right = (200, 105, 30)
+    core_mesh_filter_1.dimension = (2100, 3000, 1)
+    core_mesh = openmc.MeshFilter(core_mesh_filter_1)
 
-thermal_flux_tally = openmc.Tally(name = 'thermal flux')
-thermal_flux_tally.filters= [core_mesh, thermal_energy_filter]
-thermal_flux_tally.scores=['flux']
+    energies = np.logspace(np.log10(1e-3), np.log10(20.0e6), 51)
+    e_filter = mc.EnergyFilter(energies)
 
-import numpy as np
-energies = np.logspace(np.log10(1e-3), np.log10(20.0e6), 51)
-e_filter = mc.EnergyFilter(energies)
+    energy_tally = mc.Tally(name='spectrum')
+    energy_tally.filters = [e_filter]
+    energy_tally.scores = ['flux']
 
-energy_tally = mc.Tally(name='spectrum')
-energy_tally.filters = [e_filter]
-energy_tally.scores = ['flux']
 
-tallies = mc.Tallies([energy_tally, thermal_flux_tally])
-tallies.export_to_xml()
+    energies = np.logspace(np.log10(1e-3), np.log10(20.0e6), 5001)
+    e_filter = mc.EnergyFilter(energies)
 
+    m_filter = mc.MaterialFilter([fuel, water, graphite, cadmium])
+
+    materials_flux_tally = mc.Tally(name='materials flux')
+    materials_flux_tally.scores = ['flux']
+    materials_flux_tally.filters = [e_filter, m_filter]
+
+    total_flux_tally = mc.Tally(name='total flux')
+    total_flux_tally.scores = ['flux']
+    total_flux_tally.filters = [e_filter]
+
+    prompt_E_edges = np.geomspace(20, 20e6, 1201)
+    prompt_chai_tally = mc.Tally(name='prompt watt spectrum')
+    prompt_chai_tally.filters = [mc.EnergyoutFilter(prompt_E_edges)]
+    prompt_chai_tally.scores  = ['nu-fission', 'prompt-nu-fission', 'delayed-nu-fission']
+
+    delayed_E_edges = np.geomspace(20, 20e6, 601)
+    delayed_chai_tally = mc.Tally(name='delayed watt spectrum')
+    delayed_chai_tally.filters = [mc.EnergyoutFilter(delayed_E_edges)]
+    delayed_chai_tally.scores  = ['nu-fission', 'delayed-nu-fission']
+
+
+    radial_flux_mesh = mc.RegularMesh()
+    radial_flux_mesh.lower_left = (-100, -5, -5)
+    radial_flux_mesh.upper_right = (100,  5,  5)
+    radial_flux_mesh.dimension = (2001, 1, 1)
+
+    axial_flux_mesh = mc.RegularMesh()
+    axial_flux_mesh.lower_left = (-5, -5, -100)
+    axial_flux_mesh.upper_right =( 5,  5,  100)
+    axial_flux_mesh.dimension = (1, 1, 2001)
+
+    radial_flux_tally = mc.Tally(name= 'radial_flux')
+    radial_flux_tally.filters = [mc.MeshFilter(radial_flux_mesh)]
+    radial_flux_tally.scores = ['flux']
+
+    axial_flux_tally = mc.Tally(name='axial_flux')
+    axial_flux_tally.filters = [mc.MeshFilter(axial_flux_mesh)]
+    axial_flux_tally.scores = ['flux']
+    """
+    core_mesh_filter_1 = openmc.RegularMesh()
+    core_mesh_filter_1.lower_left = (-100, -105, -30)
+    core_mesh_filter_1.upper_right = (200, 105, 30)
+    core_mesh_filter_1.dimension = (2100, 3000, 1)
+    core_mesh_1 = openmc.MeshFilter(core_mesh_filter_1)
+
+    core_mesh = openmc.RegularMesh()
+    core_mesh.lower_left = (-1, -1, -1)
+    core_mesh.upper_right = (0, 0, 0)
+    core_mesh.dimension = (1, 1, 1)
+    core_mesh_filter = openmc.MeshFilter(core_mesh)
+
+    tight_core_mesh = openmc.RegularMesh()
+    tight_core_mesh.lower_left = (-45, -45, -30)
+    tight_core_mesh.upper_right = (45, 45, 30)
+    tight_core_mesh.dimension = (2000, 2000, 1)
+    tight_core_mesh_filter = openmc.MeshFilter(tight_core_mesh)
+    """
+    core_mesh_filter_2 = openmc.RegularMesh()
+    core_mesh_filter_2.lower_left = (-50, -50, -50)
+    core_mesh_filter_2.upper_right = (50, 50, 30)
+    core_mesh_filter_2.dimension = (5000, 5000, 1)
+    core_mesh_2 = openmc.MeshFilter(core_mesh_filter_2)
+
+
+
+    scatter_absorb_fission_tally = mc.Tally(name='scatter_absorb_fission')
+    scatter_absorb_fission_tally.filters = [core_mesh_2]
+    scatter_absorb_fission_tally.scores = ['absorption', 'scatter', 'total', 'fission']
+    """
+    thermal_energy = (0, 0.5)
+    thermal_energy_filter = openmc.EnergyFilter(thermal_energy)
+
+    epithermal_energy = (0.5, 20e6)
+    epithermal_energy_filter = openmc.EnergyFilter(epithermal_energy)
+
+    thermal_flux_tally = mc.Tally(name='thermal_flux')
+    thermal_flux_tally.filters = [tight_core_mesh_filter, thermal_energy_filter]
+    thermal_flux_tally.scores = ['flux']
+
+    epithermal_flux_tally = mc.Tally(name='epithermal_flux')
+    epithermal_flux_tally.filters = [core_mesh_filter, epithermal_energy_filter]
+    epithermal_flux_tally.scores = ['flux']
+
+    flux_normalization_tally = mc.Tally(name='flux_normalization')
+    flux_normalization_tally. scores = ['flux', 'fission', 'heating', 'fission-q-recoverable', 'kappa-fission',
+                                        'prompt-nu-fission', 'delayed-nu-fission', 'nu-fission']
+    """
+    energy_groups_50   = np.logspace(np.log10(1e-3), np.log10(20.0e6), 51)
+    energy_groups_500  = np.logspace(np.log10(1e-3), np.log10(20.0e6), 501)
+    energy_groups_5000 = np.logspace(np.log10(1e-3), np.log10(20.0e6), 5001)
+
+    energy_groups_50_filter = mc.EnergyFilter(energy_groups_50)
+    energy_groups_500_filter = mc.EnergyFilter(energy_groups_500)
+    energy_groups_5000_filter = mc.EnergyFilter(energy_groups_5000)
+
+    energy_spectrum_mesh = mc.RegularMesh()
+    energy_spectrum_mesh.lower_left = (-9, -5, -5)
+    energy_spectrum_mesh.upper_right = (1, 5, 5)
+    energy_spectrum_mesh.dimension = (1,1,1)
+    energy_spectrum_mesh_filter = mc.MeshFilter(energy_spectrum_mesh)
+
+    energy_spectrum_50_tally = mc.Tally(name='energy_spectrum_50')
+    energy_spectrum_50_tally.filters = [energy_spectrum_mesh_filter, energy_groups_50_filter]
+    energy_spectrum_50_tally.scores = ['flux']
+
+    energy_spectrum_500_tally = mc.Tally(name='energy_spectrum_500')
+    energy_spectrum_500_tally.filters = [energy_spectrum_mesh_filter, energy_groups_500_filter]
+    energy_spectrum_500_tally.scores = ['flux']
+
+    energy_spectrum_5000_tally = mc.Tally(name='energy_spectrum_5000')
+    energy_spectrum_5000_tally.filters = [energy_spectrum_mesh_filter, energy_groups_5000_filter]
+    energy_spectrum_5000_tally.scores = ['flux']
+    """
+    tallies = mc.Tallies([thermal_flux_tally, flux_normalization_tally])
+    tallies.export_to_xml()
 
 #####################################################################################
 #                                   SETTINGS & RUN                                  #
@@ -1075,12 +1264,34 @@ tallies.export_to_xml()
 settings = mc.Settings()
 settings.run_mode = 'eigenvalue'
 
+# choose the desired control blades positions using on the function below, commented are some configurations you can uncomment that correspond to different conditions
+
+
+set_control_blades_positions(SB1 = 720, SB2 = 720, SB3 = 720, RB = 325, unit= 'control room 0-1000 units') # 1st experimental critical configuration
+
+# set_control_blades_positions(SB1 = 32.4, SB2 = 32.4, SB3 = 32.4, RB = 14.625, unit= 'degrees') # 1st experimental critical configuration in degrees
+
+# set_control_blades_positions(SB1 = 675, SB2 = 675, SB3 = 675, RB = 415, unit= 'control room 0-1000 units') # 2nd experimental critical configuration
+
+# set_control_blades_positions(SB1 = 625, SB2 = 625, SB3 = 625, RB = 380, unit= 'control room 0-1000 units') # 3rd experimental critical configuration
+
+# set_control_blades_positions(SB1 = 660, SB2 = 660, SB3 = 660, RB = 466, unit= 'control room 0-1000 units') # MCNP critical configuration
+
+#set_control_blades_positions(SB1 = 1000, SB2 = 1000, SB3 = 1000, RB = 1000, unit= 'control room 0-1000 units') # excess reactivity configuration
+
+# set_control_blades_positions(SB1 = 0, SB2 = 0, SB3 = 1000, RB = 0, unit= 'control room 0-1000 units') # shutdown margin configuration
+
+
+
+verify_control_blades_positions([safety_blade_1_rotation_cell, safety_blade_2_rotation_cell,
+                                 safety_blade_3_rotation_cell, regulating_blade_rotation_cell])
+
 # when being set at false, the run will estimate K only considering prompt neutrons, completely neglecting delayed neutrons
 # to estimate Delayed neutron fraction, run once withe settings.create_delayed_neutrons = False and one without calling it, and subtract
 # settings.create_delayed_neutrons = False
 
 source = mc.Source()
-source.space = mc.stats.Point((0.0, 22, 0.0))
+source.space = mc.stats.Point((0.0, 22, 0.0)) # exactly in the middle of the fuel box with the highest expected flux
 source.angle = mc.stats.Isotropic()
 settings.energy_mode = ('continuous-energy')
 settings.source = source
@@ -1088,20 +1299,30 @@ settings.source = source
 entropy_mesh = mc.RegularMesh()
 entropy_mesh.lower_left = (-28.0, -29.01, -30.02)
 entropy_mesh.upper_right = (28.0, 29.01, 30.02)
-entropy_mesh.dimension = (10, 10, 10)
+entropy_mesh.dimension = (7, 143, 1)
 
 # when being set at false, the run will estimate K only considering prompt neutrons, completely neglecting delayed neutrons
 # to estimate Delayed neutron fraction, run once withe settings.create_delayed_neutrons = False and one without calling it, and subtract
-# settings.create_delayed_neutrons = False
+settings.create_delayed_neutrons = True
 
-settings.batches = 503
-settings.inactive = 100
+settings.batches = 535
+settings.inactive = 35
 # 500,000 particles at 500 batches with 100 inactive will produce approximately 7 pcm error and will take approximately 3 hours to run
-settings.particles = 50000 # multiply by 4 to reduce the error to half, multiply the 4 by 4 to reduce to another half, and so on
+settings.particles = 2000000 # multiply by 4 to reduce the error to half, multiply the 4 by 4 to reduce to another half, and so on
 settings.entropy_mesh = entropy_mesh
 settings.output = {'tallies': False, 'summary': False}
 
-settings.export_to_xml()
+'''
+settings.temperature = {"default": 296, "method": "interpolation", "range": (296, 312)} # temperature dependance is ignored due to:
+1- negligible thermal effects at UFTR core
+2- all experimental data the model is benchmarked against is done at a power level so low that it completely eliminates any temperature effects
+'''
 
+
+fresh_core_model = mc.Model(geometry=geometry, materials=materials, settings=settings)
 if __name__ == "__main__":
+    materials.export_to_xml()
+    geometry.export_to_xml()
+    # include_tallies()
+    settings.export_to_xml()
     mc.run()
