@@ -75,7 +75,7 @@ below are some of the benchmarking results of the LEU fresh core of 2006 against
 
 ### Table 1. Comparison of reactivity and kinetics parameters for OpenMC, MCNP, and experimental measurements
 
-| **Parameter** | **Method** |  |  | **Deviation (pcm)** |  |
+| **Parameter** | **Method** | **Method** | **Method** | **Deviation (pcm)** | **Deviation (pcm)** |
 |---|---|---|---|---|---|
 |  | **OpenMC** | **Experimental** | **MCNP** | **δ₁** | **δ₂** |
 | Safety Blade 1 Worth (pcm) | 1378 ± 7 | 1400 | 1414 | −22 | −36 |
@@ -91,7 +91,7 @@ below are some of the benchmarking results of the LEU fresh core of 2006 against
 
 ### Table 2. Comparison of criticality parameters for OpenMC, MCNP, and experimental measurements
 
-| **Parameter** | **Method** |  |  | **Deviation (pcm)** |  |
+| **Parameter** | **Method** | **Method** | **Method** | **Deviation (pcm)** | **Deviation (pcm)** |
 |---|---|---|---|---|---|
 |  | **OpenMC** | **Experimental** | **MCNP** | **δ₁** | **δ₂** |
 | *K*ₑff at First Experimental CP | 1.00026 ± 0.00005 | 1.00000 | – | 26 | – |
